@@ -58,6 +58,8 @@ export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
   const [selectedQuantityInStock, setSelectedQuantityInStock] = useState(0);
   const [selectedUnitPrice, setSelectedUnitPrice] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSize, setSelectedSize] = useState('XS');
+  const [selectedColor, setSelectedColor] = useState('White');
   const [selectedIsActive, setSelectedIsActive] = useState(true);
 
   const totalValue = useMemo(() => {
@@ -79,12 +81,23 @@ export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
     setOpen(true);
   };
 
-  const handleClose = (name: string, description: string, quantityInStock: number, unitPrice: number, category: string, isActive: boolean) => {
+  const handleClose = (
+    name: string,
+    description: string,
+    quantityInStock: number,
+    unitPrice: number,
+    category: string,
+    size: string,
+    color: string,
+    isActive: boolean,
+  ) => {
     setSelectedName('');
     setSelectedDescription('');
     setSelectedQuantityInStock(0);
     setSelectedUnitPrice(0);
     setSelectedCategory('');
+    setSelectedSize('XS');
+    setSelectedColor('White');
     setSelectedIsActive(true);
     setOpen(false);
   };
@@ -196,6 +209,8 @@ export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
         selectedQuantityInStock={selectedQuantityInStock}
         selectedUnitPrice={selectedUnitPrice}
         selectedCategory={selectedCategory}
+        selectedSize={selectedSize}
+        selectedColor={selectedColor}
         selectedIsActive={selectedIsActive}
         open={open}
         onClose={handleClose}
