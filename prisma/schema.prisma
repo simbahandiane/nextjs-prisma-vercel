@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ItemStocks {
+  id        String  @id @default(cuid())
+  itemName     String
+  itemDescription   String?
+  isActive Boolean @default(false)
+  itemType   String?
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  itemSize   String
+  itemColor   String
+  itemQuantity   Int
+  author    User?   @relation(fields: [authorId], references: [id])
+  authorId  String?
+}
+
+model User {
+  id        String   @id @default(cuid())
+  vercelId  String   @unique @map("vercel_id")
+  name      String?
+  email     String?  @unique
+  image     String?
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  itemStocks     ItemStocks[]
+
+  @@map(name: "users")
+}
