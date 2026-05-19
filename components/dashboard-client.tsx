@@ -79,22 +79,22 @@ export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel
 
   const totalValue = useMemo(() => {
     return items.reduce((sum, item) => {
-      const quantity = Number(item.quantity_in_stock ?? item.itemQuantity ?? item.quantity ?? 0);
-      const price = Number(item.unit_price ?? item.unitPrice ?? item.price ?? 0);
+      const quantity = Number(item.itemQuantity ?? item.itemQuantity ?? item.itemQuantity ?? 0);
+      const price = Number(item.itemUnitPrice ?? item.itemUnitPrice ?? item.itemUnitPrice ?? 0);
       return sum + quantity * price;
     }, 0);
   }, [items]);
 
   const lowStockCount = useMemo(() => {
     return items.filter((item) => {
-      const quantity = Number(item.quantity_in_stock ?? item.itemQuantity ?? item.quantity ?? 0);
+      const quantity = Number(item.itemQuantity ?? item.itemQuantity ?? item.itemQuantity ?? 0);
       return quantity > 0 && quantity < 10;
     }).length;
   }, [items]);
 
   const outOfStockCount = useMemo(() => {
     return items.filter((item) => {
-      const quantity = Number(item.quantity_in_stock ?? item.itemQuantity ?? item.quantity ?? 0);
+      const quantity = Number(item.itemQuantity ?? item.itemQuantity ?? item.itemQuantity ?? 0);
       return quantity <= 0;
     }).length;
   }, [items]);
