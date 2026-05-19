@@ -9,6 +9,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { FormDialog } from "./form-dialog";
+import prisma from "@/lib/prisma";
+import { ItemStocksModel } from "@/generated/prisma/models";
+import { itemPost } from "../actions/route";
 
 const summaryCards = [
   {
@@ -48,10 +51,22 @@ const summaryCards = [
     ),
     description: "Items below reorder threshold",
   },
+  {
+    label: "Out of Stock",
+    valueKey: "outOfStockCount",
+    icon: (
+      <div className="h-12 w-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center">
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-.83 0-1.5-.67-1.5-1.5S11.17 13.5 12 13.5s1.5.67 1.5 1.5S12.83 16.5 12 16.5zm1-5.5h-2V7h2v4z" />
+        </svg>
+      </div>
+    ),
+    description: "Items with zero inventory",
+  },
 ];
 
-export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
-  const [items, setItems] = useState<any[]>(itemStocks);
+export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel[] }) {
+  const [items, setItems] = useState<ItemStocksModel[]>(itemStocks);
   const [open, setOpen] = useState(false);
   const [selectedName, setSelectedName] = useState('');
   const [selectedDescription, setSelectedDescription] = useState('');
@@ -77,6 +92,13 @@ export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
     }).length;
   }, [items]);
 
+  const outOfStockCount = useMemo(() => {
+    return items.filter((item) => {
+      const quantity = Number(item.quantity_in_stock ?? item.itemQuantity ?? item.quantity ?? 0);
+      return quantity <= 0;
+    }).length;
+  }, [items]);
+
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -99,6 +121,9 @@ export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
     setSelectedSize('XS');
     setSelectedColor('White');
     setSelectedIsActive(true);
+
+    itemPost(name, description, quantityInStock, unitPrice, category, size, color, isActive);
+
     setOpen(false);
   };
 
@@ -126,14 +151,16 @@ export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
         </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-3 mb-6">
+      <div className="grid gap-5 md:grid-cols-4 mb-6">
         {summaryCards.map((card) => {
           const value =
             card.valueKey === 'totalItems'
               ? items.length
               : card.valueKey === 'totalValue'
               ? `Php ${totalValue.toFixed(2)}`
-              : lowStockCount;
+              : card.valueKey === 'lowStockCount'
+              ? lowStockCount
+              : outOfStockCount;
 
           return (
             <div key={card.label} className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
@@ -172,24 +199,24 @@ export default function HomeClient({ itemStocks }: { itemStocks: any[] }) {
             </TableHead>
             <TableBody>
               {items.map((row) => {
-                const quantity = row.quantity_in_stock ?? row.itemQuantity ?? row.quantity ?? 0;
+                const quantity = row.itemQuantity ?? row.itemQuantity ?? row.itemQuantity ?? 0;
                 const status = row.isActive ? 'Active' : 'Inactive';
 
                 return (
                   <TableRow
-                    key={row.id ?? row.sku ?? `${row.name ?? 'row'}-${Math.random()}`}
+                    key={row.id ?? row.itemName ?? `${row.itemName ?? 'row'}-${Math.random()}`}
                     sx={{
                       '&:nth-of-type(odd)': { backgroundColor: '#f8fafc' },
                       '&:hover': { backgroundColor: '#e2e8f0' },
                     }}
                   >
                     <TableCell component="th" scope="row">
-                      {row.sku ?? row.id ?? row.itemId ?? '—'}
+                      {row.itemName ?? row.id ?? row.id ?? '—'}
                     </TableCell>
-                    <TableCell align="left">{row.itemDescription ?? row.description ?? '—'}</TableCell>
+                    <TableCell align="left">{row.itemDescription ?? row.itemDescription ?? '—'}</TableCell>
                     <TableCell align="center">{quantity}</TableCell>
-                    <TableCell align="center">{`$${Number(row.unit_price ?? row.unitPrice ?? row.price ?? 0).toFixed(2)}`}</TableCell>
-                    <TableCell align="center">{row.itemType ?? row.category ?? '—'}</TableCell>
+                    <TableCell align="center">{`$${Number(row.itemUnitPrice ?? row.itemUnitPrice ?? row.itemUnitPrice ?? 0).toFixed(2)}`}</TableCell>
+                    <TableCell align="center">{row.itemType ?? row.itemType ?? '—'}</TableCell>
                     <TableCell align="center">
                       <span className={`rounded-full px-3 py-1 text-xs font-semibold ${row.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
                         {status}
