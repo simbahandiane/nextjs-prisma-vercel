@@ -103,7 +103,7 @@ export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel
     setOpen(true);
   };
 
-  const handleClose = (
+  const handleClose = async (
     name: string,
     description: string,
     quantityInStock: number,
@@ -122,7 +122,11 @@ export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel
     setSelectedColor('White');
     setSelectedIsActive(true);
 
-    itemPost(name, description, quantityInStock, unitPrice, category, size, color, isActive);
+    const response = await itemPost(name, description, quantityInStock, unitPrice, category, size, color, isActive);
+
+    if (response.success) {
+      setItems((prevItems) => [response.data, ...prevItems]);
+    }
 
     setOpen(false);
   };

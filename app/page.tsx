@@ -1,7 +1,8 @@
-import prisma from "../lib/prisma";
 import HomeClient from "../components/dashboard-client";
+import { itemGetAll } from "@/actions/route";
 
 export default async function Home() {
-  const itemStocks = await prisma.itemStocks.findMany();
+  const itemStocks = await itemGetAll();
+  
   return <HomeClient itemStocks={itemStocks} />;
 }

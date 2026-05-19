@@ -12,7 +12,7 @@ export async function itemPost(name: string,
     color: string,
     isActive: boolean) {
     
-    const post = await prisma.itemStocks.create({
+    const postResponse = await prisma.itemStocks.create({
       data: {
         itemName: name, 
         itemDescription: description,
@@ -24,4 +24,15 @@ export async function itemPost(name: string,
         isActive: isActive
       }
     });
+
+    return {
+      success: true,
+      data: {
+        ...postResponse,
+      },
+    };
   }
+
+export async function itemGetAll(){
+  return await prisma.itemStocks.findMany();
+}
