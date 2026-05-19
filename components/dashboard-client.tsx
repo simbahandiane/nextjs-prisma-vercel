@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -9,9 +9,11 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { FormDialog } from "./form-dialog";
-import prisma from "@/lib/prisma";
 import { ItemStocksModel } from "@/generated/prisma/models";
 import { itemPost } from "../actions/route";
+import Alert from '@mui/material/Alert';
+import CheckIcon from '@mui/icons-material/Check';
+import ErrorIcon from '@mui/icons-material/Error';
 
 const summaryCards = [
   {
@@ -76,6 +78,24 @@ export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel
   const [selectedSize, setSelectedSize] = useState('XS');
   const [selectedColor, setSelectedColor] = useState('White');
   const [selectedIsActive, setSelectedIsActive] = useState(true);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
+  useEffect(() => {
+    if (!showSuccessAlert && !showErrorAlert) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSuccessAlert(false);
+      setShowErrorAlert(false);
+    }, 5000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [showSuccessAlert, showErrorAlert]);
 
   const totalValue = useMemo(() => {
     return items.reduce((sum, item) => {
@@ -103,6 +123,30 @@ export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel
     setOpen(true);
   };
 
+  const alertSuccessNotification = () => {
+    if (!showSuccessAlert) {
+      return null;
+    }
+
+    return (
+      <Alert severity="success" icon={<CheckIcon fontSize="inherit" />} sx={{ mb: 2 }}>
+        {alertMessage || 'Item added successfully!'}
+      </Alert>
+    );
+  };
+
+  const alertErrorNotification = () => {
+    if (!showErrorAlert) {
+      return null;
+    }
+
+    return (
+      <Alert severity="error" icon={<ErrorIcon fontSize="inherit" />} sx={{ mb: 2 }}>
+        {alertMessage || 'An error occurred while adding the item.'}
+      </Alert>
+    );
+  };
+
   const handleClose = async (
     name: string,
     description: string,
@@ -125,7 +169,12 @@ export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel
     const response = await itemPost(name, description, quantityInStock, unitPrice, category, size, color, isActive);
 
     if (response.success) {
-      setItems((prevItems) => [response.data, ...prevItems]);
+      setItems((prevItems) => [response.data as ItemStocksModel, ...prevItems]);
+      setAlertMessage('Item added successfully!');
+      setShowSuccessAlert(true);
+    } else {
+      setAlertMessage('An error occurred while adding the item.');
+      setShowErrorAlert(true);
     }
 
     setOpen(false);
@@ -154,6 +203,9 @@ export default function HomeClient({ itemStocks }: { itemStocks: ItemStocksModel
           </button>
         </div>
       </div>
+
+      {alertSuccessNotification && alertSuccessNotification()}
+      {alertErrorNotification && alertErrorNotification()}
 
       <div className="grid gap-5 md:grid-cols-4 mb-6">
         {summaryCards.map((card) => {
